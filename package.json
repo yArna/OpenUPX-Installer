@@ -1,7 +1,7 @@
 {
   "name": "openuxp-installer",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "homepage": "https://github.com/yArna/OpenUPX-Installer",
   "repository": {
     "type": "git",
@@ -9,12 +9,17 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "tauri dev",
+    "version:sync": "node scripts/sync-version.mjs",
+    "version:check": "node scripts/sync-version.mjs --check",
+    "dev": "npm run version:sync && tauri dev",
     "dev:web": "vite",
-    "build": "tsc && vite build",
-    "tauri": "tauri",
+    "build": "npm run version:sync && tauri build --bundles app --config '{\"bundle\":{\"createUpdaterArtifacts\":false}}'",
+    "build:web": "vite build",
     "check": "tsc --noEmit",
+    "release": "bash scripts/release-all.sh",
     "release:macos": "bash scripts/release-macos.sh",
+    "release:windows": "bash scripts/release-windows.sh",
+    "release:github": "bash scripts/release-macos.sh --publish-existing",
     "release:macos:github": "bash scripts/release-macos.sh --publish-existing",
     "release:macos:github:build": "bash scripts/release-macos.sh --publish"
   },
@@ -31,8 +36,8 @@
     "@tauri-apps/cli": "^2.8.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.0.3",
     "typescript": "~5.6.3",
-    "vite": "^6.0.5"
+    "vite": "^8.1.5"
   }
 }

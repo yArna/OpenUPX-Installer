@@ -5,6 +5,7 @@ set -euo pipefail
 OPENUXP_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OPENUXP_PROJECT_DIR="$(cd "$OPENUXP_SCRIPT_DIR/.." && pwd)"
 OPENUXP_BUNDLE_DIR="$OPENUXP_PROJECT_DIR/src-tauri/target/universal-apple-darwin/release/bundle"
+OPENUXP_WINDOWS_BUNDLE_DIR="$OPENUXP_PROJECT_DIR/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis"
 OPENUXP_DEFAULT_UPDATER_KEY="$OPENUXP_PROJECT_DIR/secret/openuxp-installer.key"
 OPENUXP_BUILD=true
 OPENUXP_PUBLISH=false
@@ -28,7 +29,7 @@ usage() {
   --publish-existing
                   跳过构建，发布已有且已公证的 DMG
   --draft         创建草稿 Release（同时启用 --publish）
-  --tag <tag>     指定 Release 标签，默认使用 package.json 中的 v<version>
+  --tag <tag>     指定 Release 标签，默认使用 package.json 的 v<version>
   -h, --help      显示帮助
 EOF
 }
@@ -64,7 +65,25 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 兼容现有项目 .env 中使用的变量名。
+# 优先从 secret/.env 加载发布凭据，并兼容现有的项目根目录 .env。
+if [[ -z "${OPENUXP_ENV_FILE:-}" ]]; then
+  if [[ -f "$OPENUXP_PROJECT_DIR/secret/.env" ]]; then
+    OPENUXP_ENV_FILE="$OPENUXP_PROJECT_DIR/secret/.env"
+  elif [[ -f "$OPENUXP_PROJECT_DIR/.env" ]]; then
+    OPENUXP_ENV_FILE="$OPENUXP_PROJECT_DIR/.env"
+  fi
+elif [[ ! -f "$OPENUXP_ENV_FILE" ]]; then
+  fail "OPENUXP_ENV_FILE 指向的文件不存在：$OPENUXP_ENV_FILE"
+fi
+
+if [[ -n "${OPENUXP_ENV_FILE:-}" ]]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "$OPENUXP_ENV_FILE"
+  set +a
+fi
+
+# 兼容现有 .env 中使用的变量名。
 APPLE_SIGNING_IDENTITY="${APPLE_SIGNING_IDENTITY:-${MACOS_SIGNING_IDENTITY:-}}"
 APPLE_PASSWORD="${APPLE_PASSWORD:-${APPLE_APP_SPECIFIC_PASSWORD:-}}"
 export APPLE_SIGNING_IDENTITY APPLE_PASSWORD
@@ -79,7 +98,8 @@ xcrun --find stapler >/dev/null 2>&1 || fail "未找到 stapler，请安装完�
 
 cd "$OPENUXP_PROJECT_DIR"
 
-OPENUXP_VERSION="$(node -e "const fs=require('node:fs'); console.log(JSON.parse(fs.readFileSync('package.json', 'utf8')).version)")"
+npm run version:sync
+OPENUXP_VERSION="$(node -p "require('./package.json').version")"
 [[ -n "$OPENUXP_VERSION" ]] || fail "无法读取 package.json 版本"
 if [[ -z "$OPENUXP_RELEASE_TAG" ]]; then
   OPENUXP_RELEASE_TAG="v$OPENUXP_VERSION"
@@ -118,8 +138,14 @@ if [[ "$OPENUXP_BUILD" == true ]]; then
     fail "请设置 APPLE_ID、APPLE_PASSWORD、APPLE_TEAM_ID，或 App Store Connect API 三个变量"
   fi
 
-  security find-identity -v -p codesigning | grep -F "$APPLE_SIGNING_IDENTITY" >/dev/null \
-    || fail "当前钥匙串中找不到 APPLE_SIGNING_IDENTITY 指定的签名证书"
+  if ! security find-identity -v -p codesigning | grep -F "$APPLE_SIGNING_IDENTITY" >/dev/null; then
+    OPENUXP_SIGNING_IDENTITY_COUNT="$(security find-identity -v -p codesigning \
+      | awk '/^[[:space:]]*[0-9]+\)/ { count++ } END { print count + 0 }')"
+    if [[ "$OPENUXP_SIGNING_IDENTITY_COUNT" == "0" ]]; then
+      fail "当前钥匙串中没有有效的代码签名身份；请导入 Developer ID Application 证书及其私钥"
+    fi
+    fail "当前钥匙串中找不到 APPLE_SIGNING_IDENTITY 指定的签名证书，请检查证书名称是否完全一致"
+  fi
 
   if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
     OPENUXP_UPDATER_KEY="${TAURI_SIGNING_PRIVATE_KEY_PATH:-$OPENUXP_DEFAULT_UPDATER_KEY}"
@@ -133,7 +159,7 @@ if [[ "$OPENUXP_BUILD" == true ]]; then
   npm ci
   npm run check
   cargo test --manifest-path src-tauri/Cargo.toml
-  npm run tauri build -- --target universal-apple-darwin --bundles app,dmg
+  npm exec tauri -- build --target universal-apple-darwin --bundles app,dmg
 fi
 
 OPENUXP_APP_PATH=""
@@ -141,7 +167,7 @@ if [[ -d "$OPENUXP_BUNDLE_DIR/macos" ]]; then
   OPENUXP_APP_PATH="$(find "$OPENUXP_BUNDLE_DIR/macos" -maxdepth 1 -type d -name '*.app' -print -quit)"
 fi
 [[ -d "$OPENUXP_BUNDLE_DIR/dmg" ]] || fail "未找到 DMG 构建目录，请先运行 npm run release:macos"
-OPENUXP_DMG_PATH="$(find "$OPENUXP_BUNDLE_DIR/dmg" -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+OPENUXP_DMG_PATH="$(find "$OPENUXP_BUNDLE_DIR/dmg" -maxdepth 1 -type f -name "*_${OPENUXP_VERSION}_universal.dmg" -print -quit)"
 OPENUXP_UPDATE_PATH=""
 if [[ -d "$OPENUXP_BUNDLE_DIR/macos" ]]; then
   OPENUXP_UPDATE_PATH="$(find "$OPENUXP_BUNDLE_DIR/macos" -maxdepth 1 -type f -name '*.app.tar.gz' -print -quit)"
@@ -151,6 +177,15 @@ fi
 if [[ "$OPENUXP_PUBLISH" == true ]]; then
   [[ -n "$OPENUXP_UPDATE_PATH" ]] || fail "未找到 Tauri 更新包，请先重新运行 npm run release:macos"
   [[ -f "$OPENUXP_UPDATE_PATH.sig" ]] || fail "未找到 Tauri 更新签名：$OPENUXP_UPDATE_PATH.sig"
+fi
+
+OPENUXP_WINDOWS_UPDATE_PATH=""
+if [[ -d "$OPENUXP_WINDOWS_BUNDLE_DIR" ]]; then
+  OPENUXP_WINDOWS_UPDATE_PATH="$(find "$OPENUXP_WINDOWS_BUNDLE_DIR" -maxdepth 1 -type f -name "*_${OPENUXP_VERSION}_*-setup.exe" -print -quit)"
+  if [[ -n "$OPENUXP_WINDOWS_UPDATE_PATH" ]]; then
+    [[ -f "$OPENUXP_WINDOWS_UPDATE_PATH.sig" ]] \
+      || fail "未找到 Windows updater 签名：$OPENUXP_WINDOWS_UPDATE_PATH.sig"
+  fi
 fi
 
 if [[ "$OPENUXP_BUILD" == true ]]; then
@@ -185,12 +220,17 @@ printf '\n已确认发布产物签名和公证有效：\n%s\n' "$OPENUXP_DMG_PAT
 
 if [[ "$OPENUXP_PUBLISH" == true ]]; then
   OPENUXP_UPDATE_MANIFEST="$OPENUXP_BUNDLE_DIR/latest.json"
-  node scripts/create-update-manifest.mjs \
+  OPENUXP_MANIFEST_ARGS=(
     "$OPENUXP_VERSION" \
     "$OPENUXP_RELEASE_TAG" \
     "$OPENUXP_UPDATE_PATH" \
     "$OPENUXP_UPDATE_PATH.sig" \
     "$OPENUXP_UPDATE_MANIFEST"
+  )
+  if [[ -n "$OPENUXP_WINDOWS_UPDATE_PATH" ]]; then
+    OPENUXP_MANIFEST_ARGS+=("$OPENUXP_WINDOWS_UPDATE_PATH" "$OPENUXP_WINDOWS_UPDATE_PATH.sig")
+  fi
+  node scripts/create-update-manifest.mjs "${OPENUXP_MANIFEST_ARGS[@]}"
 
   OPENUXP_RELEASE_ARGS=(
     release create "$OPENUXP_RELEASE_TAG"
@@ -202,6 +242,9 @@ if [[ "$OPENUXP_PUBLISH" == true ]]; then
     --generate-notes
     --target "$OPENUXP_COMMIT"
   )
+  if [[ -n "$OPENUXP_WINDOWS_UPDATE_PATH" ]]; then
+    OPENUXP_RELEASE_ARGS+=("$OPENUXP_WINDOWS_UPDATE_PATH" "$OPENUXP_WINDOWS_UPDATE_PATH.sig")
+  fi
   if [[ "$OPENUXP_DRAFT" == true ]]; then
     OPENUXP_RELEASE_ARGS+=(--draft)
   fi

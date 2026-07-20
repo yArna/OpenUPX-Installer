@@ -2,7 +2,8 @@
 
 一个使用 Tauri 2 构建的轻量级 Adobe UXP 插件安装器，支持 macOS 和 Windows 的 `.ccx` 安装包。
 
-项目主页：[github.com/yArna/OpenUPX-Installer](https://github.com/yArna/OpenUPX-Installer)
+- 官网：[yarna.github.io/OpenUPX-Installer](https://yarna.github.io/OpenUPX-Installer/)
+- 源码：[github.com/yArna/OpenUPX-Installer](https://github.com/yArna/OpenUPX-Installer)
 
 ## 功能
 
@@ -25,31 +26,38 @@ npm run dev
 
 如需单独调试 Web 界面，可运行 `npm run dev:web`。
 
-仅检查前端类型和构建：
+仅检查前端类型：
 
 ```bash
 npm run check
+```
+
+构建桌面应用（会先构建前端）：
+
+```bash
 npm run build
 ```
 
-构建桌面安装包：
+仅构建前端：
 
 ```bash
-npm run tauri build
+npm run build:web
 ```
 
 ## macOS 签名与公证
 
 发布版本使用 `Developer ID Application` 证书、Hardened Runtime 和 Apple 公证。发布完全由本机脚本完成，不依赖 GitHub Actions。脚本会生成同时支持 Apple Silicon 与 Intel 的 Universal DMG，分别为 `.app` 和最终 DMG 提交公证并 stapling，然后检查代码签名、Gatekeeper 结果以及两者的公证票据。
 
-先把证书及其私钥安装到登录钥匙串，然后设置以下环境变量：
+先把证书及其私钥安装到登录钥匙串，然后把发布凭据写入 `secret/.env`（推荐）或项目根目录的 `.env`。发布脚本会自动加载：
 
-```bash
-export APPLE_SIGNING_IDENTITY="Developer ID Application: Example Inc (TEAMID)"
-export APPLE_ID="developer@example.com"
-export APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx"
-export APPLE_TEAM_ID="TEAMID"
+```dotenv
+APPLE_SIGNING_IDENTITY="Developer ID Application: Example Inc (TEAMID)"
+APPLE_ID="developer@example.com"
+APPLE_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+APPLE_TEAM_ID="TEAMID"
 ```
+
+也可以继续使用当前 Shell 已导出的变量，或通过 `OPENUXP_ENV_FILE=/path/to/file` 指定其他配置文件。
 
 只构建、签名和公证，不上传：
 
@@ -57,7 +65,7 @@ export APPLE_TEAM_ID="TEAMID"
 npm run release:macos
 ```
 
-发布到 GitHub Release 前，使用 `gh auth login` 登录，并确保当前工作区干净、提交已经推送。下面的命令直接校验并上传已经构建好的 DMG，不会再次编译；默认标签来自 `package.json` 的版本：
+发布到 GitHub Release 前，使用 `gh auth login` 登录，并确保当前工作区干净、提交已经推送。下面的命令直接校验并上传已经构建好的 DMG，不会再次编译；默认标签来自 `package.json` 的应用版本：
 
 ```bash
 npm run release:macos:github
@@ -85,6 +93,28 @@ npm run release:macos:github -- --tag v0.2.0 --draft
 本机更新私钥和公钥保存在项目的 `./secret` 目录，发布脚本会自动读取。该目录已被 Git 忽略。请将私钥安全备份；私钥丢失后，已经安装的旧版本将无法验证后续更新。公钥内容已经写入应用配置，可以公开。
 
 `npm run release:macos` 会生成 `.app.tar.gz` 及其 `.sig`；`npm run release:macos:github` 会把更新包、签名、DMG 和自动生成的 `latest.json` 一并上传到 GitHub Release。
+
+## Windows 交叉构建
+
+macOS 可以使用 `cargo-xwin` 交叉构建 Windows x64 NSIS 安装包：
+
+```bash
+brew install llvm lld nsis
+cargo install --locked cargo-xwin
+npm run release:windows
+```
+
+产物位于 `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`，包括 `-setup.exe` 和对应的 `.sig`。完成 macOS、Windows 构建后运行 `npm run release:github`，发布脚本会自动把两个平台的产物合并到同一个 GitHub Release 和 `latest.json`。
+
+完整的一键发布命令：
+
+```bash
+npm run release
+```
+
+`package.json` 是应用版本号的唯一来源。`npm run dev`、`npm run build` 和所有发布脚本都会先将版本同步到 `package-lock.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` 和 `src-tauri/Cargo.lock`；也可以单独运行 `npm run version:sync`，或使用 `npm run version:check` 只校验而不修改文件。
+
+该命令支持失败后继续：如果当前 `package.json` 应用版本对应的 Windows `-setup.exe` 和 `.sig` 已经存在，会直接复用它们，只重新执行 macOS Universal 签名与公证，最后把两个平台的安装包、更新签名和 `latest.json` 发布到 GitHub Release。版本发生变化时会自动重新构建 Windows，避免复用旧产物。
 
 ## 安装原理
 

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenUXP Installer — Adobe UXP / CCX 插件安装器</title>
+    <meta
+      name="description"
+      content="轻量级 Adobe UXP（.ccx）插件安装器，支持 macOS 与 Windows。拖放安装、清单预览、官方 UPIA，失败时可侧载 Photoshop 插件。"
+    />
+    <meta name="theme-color" content="#0d0e11" />
+    <meta property="og:title" content="OpenUXP Installer" />
+    <meta property="og:description" content="Adobe UXP / CCX 插件安装器，支持 macOS 与 Windows。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/png" href="assets/icon.png" />
+    <link rel="apple-touch-icon" href="assets/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="nav">
+        <div class="container nav-inner">
+          <a class="brand" href="#">
+            <div class="brand-mark">
+              <img src="assets/icon.png" alt="OpenUXP Installer" width="42" height="42" />
+            </div>
+            <div>
+              <strong>OpenUXP Installer</strong>
+              <span>UXP / CCX</span>
+            </div>
+          </a>
+          <nav class="nav-links" aria-label="主导航">
+            <a href="#features">功能</a>
+            <a href="#preview">预览</a>
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/yArna/OpenUPX-Installer"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"
+                />
+                <path d="M9 18c-4.51 2-5-2-7-2" />
+              </svg>
+              GitHub
+            </a>
+            <a
+              class="btn btn-primary"
+              href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              下载
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="container hero-grid">
+            <div>
+              <a class="eyebrow" href="https://moonvy.com?homepage" target="_blank">
+                Moonvy 月维出品
+              </a>
+              <h1>第三方 Adobe UXP 扩展安装器</h1>
+              <p class="hero-lead">
+                轻量级工具，安装 Photoshop, XD, Premiere Pro 等应用的
+                <code>.ccx</code> 格式扩展。解决各种原因导致的安装失败问题。
+              </p>
+              <div class="hero-actions">
+                <a
+                  class="btn btn-primary btn-lg"
+                  href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" x2="12" y1="15" y2="3" />
+                  </svg>
+                  下载
+                </a>
+                <a
+                  class="btn btn-secondary btn-lg"
+                  href="https://github.com/yArna/OpenUPX-Installer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  源码
+                </a>
+              </div>
+              <div class="hero-meta">
+                <span>代码开源</span>
+                <span>Windows</span>
+                <span>macOS</span>
+              </div>
+            </div>
+
+            <div class="hero-shot shot">
+              <span class="shot-blob" aria-hidden="true"></span>
+              <img
+                src="images/s02.png"
+                alt="OpenUXP Installer 主界面"
+                width="788"
+                height="553"
+                loading="eager"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section id="features">
+          <div class="container">
+            <div class="section-head">
+              <h2>功能</h2>
+            </div>
+            <div class="features">
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" x2="12" y1="3" y2="15" />
+                  </svg>
+                </div>
+                <h3>拖放安装</h3>
+                <p>拖入或选择 <code>.ccx</code> 文件。</p>
+              </article>
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                    <path d="M14 2v6h6" />
+                    <path d="M16 13H8" />
+                    <path d="M16 17H8" />
+                    <path d="M10 9H8" />
+                  </svg>
+                </div>
+                <h3>清单预览</h3>
+                <p>安装前查看名称、版本与兼容宿主。</p>
+              </article>
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                </div>
+                <h3>官方 UPIA</h3>
+                <p>通过 Creative Cloud 附带的安装服务完成安装。</p>
+              </article>
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 3v12" />
+                    <path d="m8 11 4 4 4-4" />
+                    <path
+                      d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"
+                    />
+                  </svg>
+                </div>
+                <h3>Photoshop 侧载</h3>
+                <p>官方安装失败时，可用户级侧载 PS 插件。</p>
+              </article>
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                    <path d="M16 16h5v5" />
+                  </svg>
+                </div>
+                <h3>自动更新</h3>
+                <p>通过 GitHub Releases 检查并安装新版本。</p>
+              </article>
+              <article class="feature">
+                <div class="feature-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <line x1="8" x2="16" y1="21" y2="21" />
+                    <line x1="12" x2="12" y1="17" y2="21" />
+                  </svg>
+                </div>
+                <h3>轻量本地</h3>
+                <p>基于 Tauri 2，插件文件仅在本地处理。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="preview">
+          <div class="container">
+            <div class="section-head">
+              <h2>预览</h2>
+            </div>
+            <div class="shots">
+              <figure class="shot">
+                <span class="shot-blob" aria-hidden="true"></span>
+                <img
+                  data-shot="s02"
+                  src="images/s02.png"
+                  alt="拖放 CCX"
+                  width="788"
+                  height="553"
+                  loading="lazy"
+                />
+              </figure>
+              <figure class="shot">
+                <span class="shot-blob shot-blob--b" aria-hidden="true"></span>
+                <img
+                  data-shot="s01"
+                  src="images/s01.png"
+                  alt="预览并安装"
+                  width="832"
+                  height="670"
+                  loading="lazy"
+                />
+              </figure>
+              <figure class="shot">
+                <span class="shot-blob shot-blob--c" aria-hidden="true"></span>
+                <img
+                  data-shot="s00"
+                  src="images/s00.png"
+                  alt="安装完成"
+                  width="832"
+                  height="724"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </div>
+        </section>
+
+        <section class="download" id="download">
+          <div class="container">
+            <div class="download-panel">
+              <div>
+                <h2>下载</h2>
+                <div class="download-actions">
+                  <a
+                    class="btn btn-primary btn-lg"
+                    href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" x2="12" y1="15" y2="3" />
+                    </svg>
+                    GitHub Releases
+                  </a>
+                  <a
+                    class="btn btn-secondary btn-lg"
+                    href="https://github.com/yArna/OpenUPX-Installer#readme"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    文档
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <img src="assets/icon.png" alt="" width="28" height="28" />
+            <span>OpenUXP Installer</span>
+          </div>
+          <div class="footer-links">
+            <a
+              href="https://github.com/yArna/OpenUPX-Installer"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub</a
+            >
+            <a
+              href="https://github.com/yArna/OpenUPX-Installer/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Releases</a
+            >
+            <a
+              href="https://github.com/yArna/OpenUPX-Installer/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Issues</a
+            >
+            <a href="https://moonvy.com/?homepage" target="_blank" rel="noopener noreferrer"
+              >Moonvy</a
+            >
+          </div>
+          <div class="footer-copy">Open source · Tauri 2 · Not affiliated with Adobe</div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

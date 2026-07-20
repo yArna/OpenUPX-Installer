@@ -1,6 +1,6 @@
 [package]
 name = "openuxp-installer"
-version = "0.1.0"
+version = "1.0.0"
 description = "A focused installer for Adobe UXP .ccx packages"
 authors = ["OpenUXP Contributors"]
 homepage = "https://github.com/yArna/OpenUPX-Installer"

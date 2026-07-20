@@ -429,7 +429,7 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  使用 Adobe 官方安装
+                  立即安装
                   <ChevronRight />
                 </>
               )}
