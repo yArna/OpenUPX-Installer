@@ -3,3 +3,13 @@ dist
 src-tauri/target
 .DS_Store
 *.log
+*.p12
+*.cer
+*.provisionprofile
+AuthKey_*.p8
+certificate-base64.txt
+*.key
+*.key.pub
+/secret/
+.env
+/secret

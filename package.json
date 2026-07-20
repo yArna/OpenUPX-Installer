@@ -2,16 +2,27 @@
   "name": "openuxp-installer",
   "private": true,
   "version": "0.1.0",
+  "homepage": "https://github.com/yArna/OpenUPX-Installer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yArna/OpenUPX-Installer.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
     "dev:web": "vite",
     "build": "tsc && vite build",
     "tauri": "tauri",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "release:macos": "bash scripts/release-macos.sh",
+    "release:macos:github": "bash scripts/release-macos.sh --publish-existing",
+    "release:macos:github:build": "bash scripts/release-macos.sh --publish"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-opener": "2.5.4",
+    "@tauri-apps/plugin-process": "2.3.1",
+    "@tauri-apps/plugin-updater": "2.10.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
