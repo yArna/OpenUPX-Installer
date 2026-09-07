@@ -14,6 +14,7 @@ export type PluginPackage = {
   pluginId?: string;
   hosts: Host[];
   manifestVersion?: number;
+  kind: "uxp" | "cep" | "xdx";
 };
 
 export type Environment = {
@@ -42,5 +43,10 @@ export type SideloadPreflight = {
   ready: boolean;
   pluginDirectory: string;
   registryPath: string;
+  registryPaths: string[];
+  hostLabels: string[];
   issues: PermissionIssue[];
+  kind: "uxp" | "cep" | "xdx";
+  debugModeEnabled: boolean;
+  debugModeKeys: string[];
 };

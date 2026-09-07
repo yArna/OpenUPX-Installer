@@ -3,14 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenUXP Installer — Adobe UXP / CCX 插件安装器</title>
+    <title>OpenUXP Installer — 安装 UXP、CEP、XDX 插件</title>
     <meta
       name="description"
-      content="轻量级 Adobe UXP（.ccx）插件安装器，支持 macOS 与 Windows。拖放安装、清单预览、官方 UPIA，失败时可侧载 Photoshop 插件。"
+      content="OpenUXP Installer：为 Photoshop、Illustrator、Premiere Pro、Adobe XD 等应用安装 CEP（.zxp）、UXP（.ccx）与 XDX（.xdx）插件。支持官方安装与侧载。"
     />
     <meta name="theme-color" content="#0d0e11" />
     <meta property="og:title" content="OpenUXP Installer" />
-    <meta property="og:description" content="Adobe UXP / CCX 插件安装器，支持 macOS 与 Windows。" />
+    <meta
+      property="og:description"
+      content="安装 Adobe CEP、UXP、XDX 插件。支持 .zxp / .ccx / .xdx，官方安装与侧载。"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="assets/icon.png" />
     <meta name="twitter:card" content="summary" />
@@ -34,10 +37,11 @@
             </div>
             <div>
               <strong>OpenUXP Installer</strong>
-              <span>UXP / CCX</span>
+              <span>CEP · UXP · XDX</span>
             </div>
           </a>
           <nav class="nav-links" aria-label="主导航">
+            <a href="#formats">格式</a>
             <a href="#features">功能</a>
             <a href="#preview">预览</a>
             <a
@@ -76,14 +80,29 @@
         <section class="hero">
           <div class="container hero-grid">
             <div>
-              <a class="eyebrow" href="https://moonvy.com?homepage" target="_blank">
-                Moonvy 月维出品
-              </a>
-              <h1>第三方 Adobe UXP 扩展安装器</h1>
-              <p class="hero-lead">
-                轻量级工具，安装 Photoshop, XD, Premiere Pro 等应用的
-                <code>.ccx</code> 格式扩展。解决各种原因导致的安装失败问题。
+              <p class="eyebrow">
+                <span class="dot" aria-hidden="true"></span>
+                macOS · Windows · 开源
               </p>
+              <h1>安装 Adobe 扩展插件</h1>
+              <p class="hero-lead">
+                把各种格式的 Adobe 扩展插件装进 Photoshop、Illustrator、Premiere Pro、Adobe XD
+                等应用。
+              </p>
+              <ul class="hero-formats" aria-label="支持的安装包格式">
+                <li>
+                  <span class="format-chip cep">CEP</span>
+                  <code>.zxp</code>
+                </li>
+                <li>
+                  <span class="format-chip uxp">UXP</span>
+                  <code>.ccx</code>
+                </li>
+                <li>
+                  <span class="format-chip xdx">XDX</span>
+                  <code>.xdx</code>
+                </li>
+              </ul>
               <div class="hero-actions">
                 <a
                   class="btn btn-primary btn-lg"
@@ -113,11 +132,6 @@
                   源码
                 </a>
               </div>
-              <div class="hero-meta">
-                <span>代码开源</span>
-                <span>Windows</span>
-                <span>macOS</span>
-              </div>
             </div>
 
             <div class="hero-shot shot">
@@ -129,6 +143,98 @@
                 height="553"
                 loading="eager"
               />
+            </div>
+          </div>
+        </section>
+
+        <section id="formats">
+          <div class="container">
+            <div class="section-head">
+              <h2>三种格式，一次装好</h2>
+              <p>覆盖 Adobe 现在仍在使用的主要扩展体系，不用再换安装器。</p>
+            </div>
+            <div class="format-grid">
+              <article class="format-card cep">
+                <div class="format-card-top">
+                  <span class="format-chip cep">CEP</span>
+                  <code>.zxp</code>
+                </div>
+                <h3>经典 CEP 扩展插件</h3>
+                <p>
+                  解压到用户级 CEP 目录，并自动开启
+                  <code>PlayerDebugMode</code>。未签名扩展也能在宿主里加载。
+                </p>
+                <ul class="app-pills">
+                  <li>
+                    <img src="assets/photoshop.svg" alt="" width="22" height="22" />
+                    Photoshop
+                  </li>
+                  <li>
+                    <img src="assets/illustrator.svg" alt="" width="22" height="22" />
+                    Illustrator
+                  </li>
+                  <li>
+                    <img src="assets/premiere pro.svg" alt="" width="22" height="22" />
+                    Premiere Pro
+                  </li>
+                  <li>
+                    <img src="assets/after effects.svg" alt="" width="22" height="22" />
+                    After Effects
+                  </li>
+                  <li>
+                    <img src="assets/indesign.svg" alt="" width="22" height="22" />
+                    InDesign
+                  </li>
+                </ul>
+              </article>
+
+              <article class="format-card uxp">
+                <div class="format-card-top">
+                  <span class="format-chip uxp">UXP</span>
+                  <code>.ccx</code>
+                </div>
+                <h3>新一代 UXP 扩展插件</h3>
+                <p>
+                  读取 UXP 清单后，可调用 Adobe 官方安装服务，或侧载到 Photoshop、Illustrator
+                  的用户级 UXP 目录。
+                </p>
+                <ul class="app-pills">
+                  <li>
+                    <img src="assets/photoshop.svg" alt="" width="22" height="22" />
+                    Photoshop
+                  </li>
+                  <li>
+                    <img src="assets/illustrator.svg" alt="" width="22" height="22" />
+                    Illustrator
+                  </li>
+                  <li>
+                    <img src="assets/xd.svg" alt="" width="22" height="22" />
+                    Adobe XD
+                  </li>
+                  <li>
+                    <img src="assets/premiere pro.svg" alt="" width="22" height="22" />
+                    Premiere Pro
+                  </li>
+                </ul>
+              </article>
+
+              <article class="format-card xdx">
+                <div class="format-card-top">
+                  <span class="format-chip xdx">XDX</span>
+                  <code>.xdx</code>
+                </div>
+                <h3>Adobe XD 插件插件</h3>
+                <p>
+                  识别 XD 插件清单，支持官方安装，或侧载到 Adobe XD
+                  用户目录。给 XD 扩展一条和 CEP、UXP 一样的安装路径。
+                </p>
+                <ul class="app-pills">
+                  <li>
+                    <img src="assets/xd.svg" alt="" width="22" height="22" />
+                    Adobe XD
+                  </li>
+                </ul>
+              </article>
             </div>
           </div>
         </section>
@@ -154,7 +260,7 @@
                   </svg>
                 </div>
                 <h3>拖放安装</h3>
-                <p>拖入或选择 <code>.ccx</code> 文件。</p>
+                <p>拖入 <code>.zxp</code>、<code>.ccx</code> 或 <code>.xdx</code>。</p>
               </article>
               <article class="feature">
                 <div class="feature-icon">
@@ -172,8 +278,8 @@
                     <path d="M10 9H8" />
                   </svg>
                 </div>
-                <h3>清单预览</h3>
-                <p>安装前查看名称、版本与兼容宿主。</p>
+                <h3>安装包预览</h3>
+                <p>查看名称、版本、格式和兼容应用。</p>
               </article>
               <article class="feature">
                 <div class="feature-icon">
@@ -188,8 +294,8 @@
                     <path d="m9 12 2 2 4-4" />
                   </svg>
                 </div>
-                <h3>官方 UPIA</h3>
-                <p>通过 Creative Cloud 附带的安装服务完成安装。</p>
+                <h3>官方安装</h3>
+                <p>UXP / XDX 可调用 Adobe 官方安装服务。</p>
               </article>
               <article class="feature">
                 <div class="feature-icon">
@@ -207,43 +313,8 @@
                     />
                   </svg>
                 </div>
-                <h3>Photoshop 侧载</h3>
-                <p>官方安装失败时，可用户级侧载 PS 插件。</p>
-              </article>
-              <article class="feature">
-                <div class="feature-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" />
-                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                    <path d="M16 16h5v5" />
-                  </svg>
-                </div>
-                <h3>自动更新</h3>
-                <p>通过 GitHub Releases 检查并安装新版本。</p>
-              </article>
-              <article class="feature">
-                <div class="feature-icon">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    aria-hidden="true"
-                  >
-                    <rect width="20" height="14" x="2" y="3" rx="2" />
-                    <line x1="8" x2="16" y1="21" y2="21" />
-                    <line x1="12" x2="12" y1="17" y2="21" />
-                  </svg>
-                </div>
-                <h3>轻量本地</h3>
-                <p>基于 Tauri 2，插件文件仅在本地处理。</p>
+                <h3>侧载安装</h3>
+                <p>写入用户级目录；CEP 会自动打开调试模式。</p>
               </article>
             </div>
           </div>
@@ -260,7 +331,7 @@
                 <img
                   data-shot="s02"
                   src="images/s02.png"
-                  alt="拖放 CCX"
+                  alt="拖放安装包"
                   width="788"
                   height="553"
                   loading="lazy"
@@ -297,6 +368,7 @@
             <div class="download-panel">
               <div>
                 <h2>下载</h2>
+                <p>支持 macOS 与 Windows。安装 CEP、UXP、XDX，一个应用即可。</p>
                 <div class="download-actions">
                   <a
                     class="btn btn-primary btn-lg"

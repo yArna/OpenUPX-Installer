@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { LogicalSize } from "@tauri-apps/api/dpi";
@@ -21,7 +22,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import type { Environment, InstallResult, PluginPackage, SideloadPreflight } from "./types";
+import type { Environment, Host, InstallResult, PluginPackage, SideloadPreflight } from "./types";
 
 type Stage = "empty" | "ready" | "installing" | "success" | "error";
 type UpdateStage = "hidden" | "available" | "downloading" | "restarting" | "error";
@@ -30,6 +31,9 @@ const GITHUB_URL = "https://github.com/yArna/OpenUPX-Installer";
 const Moonvy_URL = "https://moonvy.com/?homepage";
 let automaticUpdateCheck: Promise<Update | null> | null = null;
 
+const isTauriRuntime = () =>
+  typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
 const formatBytes = (bytes: number) => {
   if (!bytes) return "—";
   const units = ["B", "KB", "MB", "GB"];
@@ -37,7 +41,56 @@ const formatBytes = (bytes: number) => {
   return `${(bytes / 1024 ** index).toFixed(index ? 1 : 0)} ${units[index]}`;
 };
 
+const uniqueHostLabels = (hosts: Host[]) => {
+  const labels: string[] = [];
+  for (const host of hosts) {
+    if (!labels.includes(host.label)) labels.push(host.label);
+  }
+  return labels;
+};
+
+const sideloadHostLabels = (hosts: Host[]) => {
+  const labels: string[] = [];
+  const seen = new Set<string>();
+  for (const host of hosts) {
+    const app = host.app.toUpperCase();
+    const key =
+      app === "PS" || app === "PHSP"
+        ? "PS"
+        : app === "XD"
+          ? "XD"
+          : app === "AI" || app === "ILST"
+            ? "AI"
+            : "";
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    labels.push(host.label);
+  }
+  return labels;
+};
+
+const joinLabels = (labels: string[], fallback: string) => {
+  if (!labels.length) return fallback;
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} 和 ${labels[1]}`;
+  return `${labels.slice(0, -1).join("、")} 和 ${labels[labels.length - 1]}`;
+};
+
+const emptyPreflight = (message: string): SideloadPreflight => ({
+  supported: false,
+  ready: false,
+  pluginDirectory: "",
+  registryPath: "",
+  registryPaths: [],
+  hostLabels: [],
+  issues: [{ path: "", message, hint: "请检查安装包后重试。" }],
+  kind: "uxp",
+  debugModeEnabled: false,
+  debugModeKeys: [],
+});
+
 const fitWindowToContent = async () => {
+  if (!isTauriRuntime()) return;
   const topbar = document.querySelector<HTMLElement>(".topbar");
   const workspace = document.querySelector<HTMLElement>(".workspace");
   const footer = document.querySelector<HTMLElement>("footer");
@@ -61,13 +114,27 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [details, setDetails] = useState("");
   const [preflight, setPreflight] = useState<SideloadPreflight | null>(null);
-  const [installMode, setInstallMode] = useState<"official" | "sideload">("official");
+  const [installMode, setInstallMode] = useState<"official" | "sideload">("sideload");
+  const [installingMessage, setInstallingMessage] = useState("");
   const [activationPending, setActivationPending] = useState(false);
   const [updateStage, setUpdateStage] = useState<UpdateStage>("hidden");
   const [updateVersion, setUpdateVersion] = useState("");
   const [updateProgress, setUpdateProgress] = useState(0);
   const [updateMessage, setUpdateMessage] = useState("");
+  const [appVersion, setAppVersion] = useState("");
+  const preflightRequest = useRef(0);
   const pendingUpdate = useRef<Update | null>(null);
+
+  const loadSideloadPreflight = async (path: string) => {
+    const request = ++preflightRequest.current;
+    try {
+      const next = await invoke<SideloadPreflight>("check_sideload", { path });
+      if (request === preflightRequest.current) setPreflight(next);
+    } catch (error) {
+      if (request !== preflightRequest.current) return;
+      setPreflight(emptyPreflight(String(error)));
+    }
+  };
 
   const inspect = async (path?: string) => {
     try {
@@ -79,6 +146,12 @@ export default function App() {
       setPkg(next);
       setStage("ready");
       setPreflight(null);
+      if (next.kind === "cep") {
+        setInstallMode("sideload");
+        void loadSideloadPreflight(next.path);
+      } else if (installMode === "sideload") {
+        void loadSideloadPreflight(next.path);
+      }
     } catch (error) {
       setPkg(null);
       setStage("error");
@@ -88,6 +161,8 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (!isTauriRuntime()) return;
+    getVersion().then(setAppVersion).catch(() => undefined);
     invoke<Environment>("check_environment")
       .then(setEnvironment)
       .catch(() => undefined);
@@ -98,21 +173,26 @@ export default function App() {
         if (event.payload.type === "leave") setDragging(false);
         if (event.payload.type === "drop") {
           setDragging(false);
-          const path = event.payload.paths.find((item) => item.toLowerCase().endsWith(".ccx"));
+          const path = event.payload.paths.find((item) => {
+            const lower = item.toLowerCase();
+            return lower.endsWith(".ccx") || lower.endsWith(".xdx") || lower.endsWith(".zxp");
+          });
           if (path) void inspect(path);
           else {
             setStage("error");
-            setMessage("请选择一个 .ccx 安装包");
+            setMessage("请选择一个 .ccx、.xdx 或 .zxp 安装包");
           }
         }
       })
       .then((fn) => {
         unlisten = fn;
-      });
+      })
+      .catch(() => undefined);
     return () => unlisten?.();
   }, []);
 
   useEffect(() => {
+    if (!isTauriRuntime()) return;
     let active = true;
     automaticUpdateCheck ??= check({ timeout: 12_000 });
     automaticUpdateCheck
@@ -150,9 +230,10 @@ export default function App() {
   const install = async () => {
     if (!pkg) return;
     setStage("installing");
-    setInstallMode("official");
     setMessage("");
+    setDetails("");
     setPreflight(null);
+    setInstallingMessage("正在等待 Adobe 官方安装服务完成，最长可能需要 5 分钟…");
     setActivationPending(false);
     try {
       const result = await invoke<InstallResult>("install_ccx", { path: pkg.path });
@@ -160,22 +241,18 @@ export default function App() {
       setMessage(result.message);
       setDetails(result.details ?? "");
       setActivationPending(Boolean(result.activationPending));
+      setInstallingMessage("");
       if (!result.success && result.canSideLoad) {
         try {
           setPreflight(await invoke<SideloadPreflight>("check_sideload", { path: pkg.path }));
         } catch (error) {
-          setPreflight({
-            supported: false,
-            ready: false,
-            pluginDirectory: "",
-            registryPath: "",
-            issues: [{ path: "", message: String(error), hint: "请检查安装包后重试。" }],
-          });
+          setPreflight(emptyPreflight(String(error)));
         }
       }
     } catch (error) {
       setStage("error");
       setMessage(String(error));
+      setInstallingMessage("");
     }
   };
 
@@ -184,31 +261,44 @@ export default function App() {
     setStage("installing");
     setInstallMode("sideload");
     setMessage("");
+    setDetails("");
+    setInstallingMessage(
+      pkg.kind === "cep"
+        ? "正在解压 CEP 扩展并开启调试模式…"
+        : `正在安全解压插件并更新 ${joinLabels(
+            preflight?.hostLabels?.length ? preflight.hostLabels : sideloadHostLabels(pkg.hosts),
+            "Photoshop、Adobe XD 或 Illustrator",
+          )} 注册信息…`,
+    );
     try {
       const result = await invoke<InstallResult>("sideload_ccx", { path: pkg.path });
       setStage(result.success ? "success" : "error");
       setMessage(result.message);
       setDetails(result.details ?? "");
       setActivationPending(Boolean(result.activationPending));
+      setInstallingMessage("");
     } catch (error) {
       setStage("error");
       setMessage(String(error));
+      setInstallingMessage("");
     }
   };
 
   const recheckPermissions = async () => {
     if (!pkg) return;
-    try {
-      setPreflight(await invoke<SideloadPreflight>("check_sideload", { path: pkg.path }));
-    } catch (error) {
-      setPreflight({
-        supported: false,
-        ready: false,
-        pluginDirectory: "",
-        registryPath: "",
-        issues: [{ path: "", message: String(error), hint: "请检查安装包后重试。" }],
-      });
+    void loadSideloadPreflight(pkg.path);
+  };
+
+  const chooseInstallMode = (mode: "official" | "sideload") => {
+    setInstallMode(mode);
+    setMessage("");
+    setDetails("");
+    if (mode === "official" || !pkg) {
+      preflightRequest.current += 1;
+      setPreflight(null);
+      return;
     }
+    void loadSideloadPreflight(pkg.path);
   };
 
   const reset = () => {
@@ -217,7 +307,9 @@ export default function App() {
     setMessage("");
     setDetails("");
     setPreflight(null);
-    setInstallMode("official");
+    preflightRequest.current += 1;
+    setInstallMode("sideload");
+    setInstallingMessage("");
     setActivationPending(false);
   };
 
@@ -250,8 +342,36 @@ export default function App() {
   const status = useMemo(() => {
     if (!environment) return { tone: "muted", text: "正在检测 Adobe 环境…" };
     if (environment.installerFound) return { tone: "good", text: "Adobe 安装服务已就绪" };
-    return { tone: "warn", text: "未找到 Adobe 安装服务" };
+    if (environment.creativeCloudFound) return { tone: "warn", text: "Creative Cloud 已安装，但未找到安装服务" };
+    return { tone: "warn", text: "未找到 Creative Cloud Desktop" };
   }, [environment]);
+
+  const isCep = pkg?.kind === "cep";
+  const sideloadSummary = useMemo(
+    () =>
+      joinLabels(
+        preflight?.hostLabels?.length
+          ? preflight.hostLabels
+          : pkg?.kind === "cep"
+            ? uniqueHostLabels(pkg.hosts)
+            : pkg
+              ? sideloadHostLabels(pkg.hosts)
+              : [],
+        pkg?.kind === "cep" ? "兼容的 Adobe 应用" : "Photoshop、Adobe XD 或 Illustrator",
+      ),
+    [pkg, preflight],
+  );
+  const officialSummary = useMemo(
+    () => joinLabels(pkg ? uniqueHostLabels(pkg.hosts) : [], "兼容的 Adobe 应用"),
+    [pkg],
+  );
+  const activeHostSummary = installMode === "sideload" ? sideloadSummary : officialSummary;
+  const registryPaths =
+    preflight?.registryPaths?.length
+      ? preflight.registryPaths
+      : preflight?.registryPath
+        ? [preflight.registryPath]
+        : [];
 
   return (
     <main className="app-shell">
@@ -277,18 +397,18 @@ export default function App() {
             <div className="package-visual">
               <img src="/ccx-icon.png" alt="Adobe CCX 安装包" />
             </div>
-            <h2>{dragging ? "松开以载入安装包" : "拖放 CCX 文件到这里"}</h2>
+            <h2>{dragging ? "松开以载入安装包" : "拖放 CCX / XDX / ZXP 文件到这里"}</h2>
             <p>或点击从电脑中选择</p>
             <span className="browse">
               <FolderOpen size={17} />
               选择文件
             </span>
-            <small>支持 Adobe UXP 的 .ccx 安装包</small>
+            <small>支持 UXP .ccx、Adobe XD .xdx 与 CEP .zxp</small>
           </button>
         )}
 
         {pkg && stage !== "success" && (
-          <div className="package-card">
+          <div className="package-card" aria-busy={stage === "installing"}>
             <div className="package-heading">
               <div className="package-icon">
                 <img src="/ccx-icon.png" alt="" />
@@ -317,11 +437,57 @@ export default function App() {
               </div>
               <div>
                 <span>清单</span>
-                <strong>{pkg.manifestVersion ? `Manifest v${pkg.manifestVersion}` : "UXP"}</strong>
+                <strong>
+                  {pkg.kind === "cep"
+                    ? pkg.manifestVersion
+                      ? `CEP v${pkg.manifestVersion}`
+                      : "CEP"
+                    : pkg.kind === "xdx"
+                      ? pkg.manifestVersion
+                        ? `XDX · Manifest v${pkg.manifestVersion}`
+                        : "XDX"
+                      : pkg.manifestVersion
+                        ? `UXP · Manifest v${pkg.manifestVersion}`
+                        : "UXP"}
+                </strong>
               </div>
               <div>
                 <span>插件 ID</span>
                 <strong title={pkg.pluginId}>{pkg.pluginId || "未提供"}</strong>
+              </div>
+            </div>
+
+            <div className="install-method">
+              <span className="section-label">安装方式</span>
+              <div
+                className={`install-method-options ${isCep ? "single" : ""}`}
+                role="radiogroup"
+                aria-label="安装方式"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={installMode === "sideload"}
+                  className={`install-method-option ${installMode === "sideload" ? "active" : ""}`}
+                  onClick={() => chooseInstallMode("sideload")}
+                  disabled={stage === "installing"}
+                >
+                  <strong>{isCep ? "CEP 侧载" : "侧载安装"}</strong>
+                  <span>{isCep ? "安装到 CEP 用户扩展目录" : `安装到 ${sideloadSummary} 用户目录`}</span>
+                </button>
+                {!isCep && (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={installMode === "official"}
+                    className={`install-method-option ${installMode === "official" ? "active" : ""}`}
+                    onClick={() => chooseInstallMode("official")}
+                    disabled={stage === "installing"}
+                  >
+                    <strong>官方安装</strong>
+                    <span>通过 Adobe Creative Cloud 安装</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -346,12 +512,44 @@ export default function App() {
               </div>
             </div>
 
-            {!environment?.installerFound && (
+            {installMode === "official" && !environment?.installerFound && (
               <div className="notice warning">
                 <AlertTriangle />
                 <div>
-                  <strong>需要 Creative Cloud Desktop</strong>
-                  <p>安装前请先安装或更新 Adobe Creative Cloud Desktop。</p>
+                  <strong>
+                    {environment?.creativeCloudFound
+                      ? "未找到 Adobe 安装服务"
+                      : "需要 Creative Cloud Desktop"}
+                  </strong>
+                  <p>
+                    {environment?.creativeCloudFound
+                      ? "请重新启动或更新 Creative Cloud Desktop 后重试。"
+                      : "安装前请先安装或更新 Adobe Creative Cloud Desktop。"}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {installMode === "sideload" && !preflight && stage !== "installing" && (
+              <div className="notice warning" aria-live="polite">
+                <LoaderCircle className="spin" />
+                <div>
+                  <strong>正在检查侧载环境</strong>
+                  <p>
+                    {isCep
+                      ? "正在检查 CEP 扩展目录权限，并确认调试模式状态。"
+                      : `正在检查插件目录和 ${sideloadSummary} 注册文件的读写权限。`}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {stage === "installing" && (
+              <div className="notice warning" aria-live="polite">
+                <LoaderCircle className="spin" />
+                <div>
+                  <strong>{installMode === "sideload" ? "正在侧载插件" : "正在安装插件"}</strong>
+                  <p>{installingMessage}</p>
                 </div>
               </div>
             )}
@@ -372,16 +570,26 @@ export default function App() {
               </div>
             )}
 
-            {stage === "error" && preflight && (
+            {installMode === "sideload" && stage !== "installing" && preflight && (
               <div className={`sideload-panel ${preflight.ready ? "ready" : "blocked"}`}>
                 <div className="sideload-heading">
                   <ShieldCheck />
                   <div>
-                    <strong>{preflight.ready ? "可尝试侧载安装" : "侧载安装需要文件权限"}</strong>
+                    <strong>
+                      {preflight.ready
+                        ? "侧载环境已准备就绪"
+                        : preflight.supported
+                          ? "侧载安装需要文件权限"
+                          : "当前安装包不支持侧载"}
+                    </strong>
                     <p>
                       {preflight.ready
-                        ? "官方安装失败后，可将插件安装到 Photoshop 的用户级 UXP 目录。"
-                        : "OpenUXP Installer 当前无法安全写入以下位置。"}
+                        ? isCep
+                          ? "扩展将安装到用户级 CEP 目录。安装时会自动开启调试模式，未签名扩展才能加载。"
+                          : `插件将安装到 ${sideloadSummary} 的用户级 UXP 目录，不经过 Creative Cloud。`
+                        : preflight.supported
+                          ? "OpenUXP Installer 当前无法安全写入以下位置。"
+                          : "侧载目前仅支持 manifest 中声明 Photoshop（PS）、Adobe XD 或 Illustrator（AI）的插件。"}
                     </p>
                   </div>
                 </div>
@@ -403,25 +611,42 @@ export default function App() {
                 {preflight.ready && (
                   <>
                     <div className="sideload-paths">
-                      <span>插件目录</span>
+                      <span>{isCep ? "扩展目录" : "插件目录"}</span>
                       <code>{preflight.pluginDirectory}</code>
-                      <span>注册文件</span>
-                      <code>{preflight.registryPath}</code>
+                      {isCep ? (
+                        <>
+                          <span>调试模式</span>
+                          <code>
+                            {preflight.debugModeEnabled
+                              ? `已开启 ${preflight.debugModeKeys.join("、")}`
+                              : `安装时自动开启 ${preflight.debugModeKeys.join("、")}`}
+                          </code>
+                        </>
+                      ) : (
+                        registryPaths.map((path) => (
+                          <Fragment key={path}>
+                            <span>注册文件</span>
+                            <code>{path}</code>
+                          </Fragment>
+                        ))
+                      )}
                     </div>
                     <p className="sideload-warning">
                       <AlertTriangle />
-                      侧载会绕过 Creative Cloud 的安装确认，且插件不会由 Creative Cloud 管理。
+                      {isCep
+                        ? "未签名 CEP 扩展需要 PlayerDebugMode。安装会写入当前用户的 CSXS 调试偏好，并在重启 Adobe 应用后生效。"
+                        : "侧载会绕过 Creative Cloud 的安装确认，且插件不会由 Creative Cloud 管理。"}
                     </p>
-                    <button className="sideload-action" onClick={sideload}>
-                      使用侧载安装
-                      <ChevronRight />
-                    </button>
                   </>
                 )}
               </div>
             )}
 
-            <button className="primary-action" onClick={install} disabled={stage === "installing"}>
+            <button
+              className="primary-action"
+              onClick={() => void (installMode === "sideload" ? sideload() : install())}
+              disabled={stage === "installing" || (installMode === "sideload" && !preflight?.ready)}
+            >
               {stage === "installing" ? (
                 <>
                   <LoaderCircle className="spin" />
@@ -429,7 +654,7 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  立即安装
+                  {installMode === "sideload" ? "立即侧载" : "立即安装"}
                   <ChevronRight />
                 </>
               )}
@@ -437,7 +662,9 @@ export default function App() {
             <div className="trust">
               <ShieldCheck size={15} />{" "}
               {installMode === "sideload"
-                ? "侧载安装会创建可恢复的 Photoshop 注册文件备份"
+                ? isCep
+                  ? "安装时会自动开启 CEP 调试模式（PlayerDebugMode）"
+                  : `侧载安装会创建可恢复的 ${sideloadSummary} 注册文件备份`
                 : "官方安装由 Adobe Unified Plugin Installer Agent 完成"}
             </div>
           </div>
@@ -475,8 +702,8 @@ export default function App() {
             <div className={`success-tip ${activationPending ? "pending" : ""}`}>
               <Info size={17} />
               {activationPending
-                ? "请完全退出并重新打开 Photoshop，插件将在启动时启用。"
-                : "插件已就绪，打开 Photoshop 即可使用。"}
+                ? `请完全退出并重新打开 ${activeHostSummary}，插件将在启动时启用。`
+                : `插件已就绪，打开 ${activeHostSummary} 即可使用。`}
             </div>
             <button className="secondary-action" onClick={reset}>
               <PackageOpen size={17} />
@@ -546,7 +773,7 @@ export default function App() {
           >
             Moonvy.com
           </button>{" "}
-          · v0.1.0
+          · <span className="app-version">v{appVersion || "—"}</span>
         </span>
         <button
           className="github-link"

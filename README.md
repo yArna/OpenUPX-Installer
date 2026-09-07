@@ -1,19 +1,20 @@
 # OpenUXP Installer
 
-一个使用 Tauri 2 构建的轻量级 Adobe UXP 插件安装器，支持 macOS 和 Windows 的 `.ccx` 安装包。
+一个使用 Tauri 2 构建的轻量级 Adobe 插件安装器，支持 macOS 和 Windows 上的 CEP（`.zxp`）、UXP（`.ccx`）与 XDX（`.xdx`）安装包。
 
 - 官网：[yarna.github.io/OpenUPX-Installer](https://yarna.github.io/OpenUPX-Installer/)
 - 源码：[github.com/yArna/OpenUPX-Installer](https://github.com/yArna/OpenUPX-Installer)
 
 ## 功能
 
-- 拖放或选择 `.ccx` 文件
-- 在安装前读取并展示 UXP 清单、版本和兼容宿主
+- 拖放或选择 `.ccx` / `.xdx` / `.zxp` 文件
+- 在安装前读取并展示 UXP / XDX / CEP 清单、版本和兼容宿主
 - 自动探测 Creative Cloud Desktop 附带的 Unified Plugin Installer Agent（UPIA）
-- 使用 Adobe 官方安装服务完成安装，并展示错误代码与诊断输出
-- 官方安装失败后，可选择将 Photoshop 插件侧载到用户级 UXP 目录
-- 侧载前检查插件目录、注册目录及 `PS.json` 的读写权限
-- 安全解压 CCX、备份注册文件、去重更新，并在写入失败时自动回滚
+- 使用 Adobe 官方安装服务完成 UXP 安装，并展示错误代码与诊断输出
+- 可将 Photoshop、Adobe XD 或 Illustrator 的 UXP 插件侧载到用户级 UXP 目录
+- 可将 CEP 扩展侧载到用户级 `Adobe/CEP/extensions` 目录，并自动开启 `PlayerDebugMode`
+- 侧载前检查插件目录、注册目录及 `PS.json` / `XD.json` / `AI.json` 的读写权限
+- 安全解压安装包、备份注册文件、去重更新，并在写入失败时自动回滚
 
 ## 开发
 
@@ -125,6 +126,14 @@ npm run release
 
 UPIA 不能单独下载；若应用提示未找到安装服务，请安装或更新 Adobe Creative Cloud Desktop。
 
-## Photoshop 侧载
+## 侧载安装
 
-侧载选项只会在 Adobe 官方安装失败后出现，目前仅支持 macOS 和 Windows 上 manifest 宿主为 `PS` 的插件。应用会将插件解压到当前用户的 `Adobe/UXP/Plugins/External` 目录，并更新 `PluginsInfo/v1/PS.json`。侧载插件不会由 Creative Cloud 管理，使用前请确认安装包来源可信。
+UXP 侧载目前支持 macOS 和 Windows 上 manifest 宿主为 Photoshop（`PS`）、Adobe XD（`XD`）或 Illustrator（`AI`）的插件。应用会将插件解压到当前用户的 `Adobe/UXP/Plugins/External` 目录，并按宿主更新 `PluginsInfo/v1/PS.json`、`XD.json` 和/或 `AI.json`。同时声明多个宿主时，会写入对应的多份注册文件，插件文件只安装一份。侧载插件不会由 Creative Cloud 管理，使用前请确认安装包来源可信。
+
+## CEP 扩展
+
+`.zxp` 会安装到当前用户的 `Adobe/CEP/extensions` 目录。未签名的 CEP 扩展需要调试模式才能加载，因此安装时会自动为 `CSXS.6` 到 `CSXS.14` 写入 `PlayerDebugMode=1`（macOS 使用 `defaults write`，Windows 写入当前用户注册表）。完成后请完全退出并重新打开对应的 Adobe 应用。
+
+## XDX 插件
+
+`.xdx` 是 Adobe XD 的插件包。应用会按 UXP 清单读取名称、版本和宿主，既可以通过官方安装服务安装，也可以侧载到 Adobe XD 的用户级 UXP 目录。

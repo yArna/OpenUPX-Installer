@@ -1,7 +1,7 @@
 {
   "name": "openuxp-installer",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.3",
   "homepage": "https://github.com/yArna/OpenUPX-Installer",
   "repository": {
     "type": "git",
