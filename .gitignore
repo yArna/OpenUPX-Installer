@@ -13,3 +13,4 @@ certificate-base64.txt
 /secret/
 .env
 /secret
+.qrls-state.json

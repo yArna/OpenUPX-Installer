@@ -65,6 +65,7 @@
               GitHub
             </a>
             <a
+              id="nav-download-btn"
               class="btn btn-primary"
               href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
               target="_blank"
@@ -104,25 +105,32 @@
                 </li>
               </ul>
               <div class="hero-actions">
-                <a
-                  class="btn btn-primary btn-lg"
-                  href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    aria-hidden="true"
+                <div class="hero-download-group">
+                  <a
+                    id="hero-download-btn"
+                    class="btn btn-primary btn-lg"
+                    href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" x2="12" y1="15" y2="3" />
-                  </svg>
-                  下载
-                </a>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" x2="12" y1="15" y2="3" />
+                    </svg>
+                    <span>下载安装包</span>
+                  </a>
+                  <div id="hero-download-meta" class="hero-download-meta">
+                    <span class="device-pill">支持 macOS 与 Windows</span>
+                    <a class="hero-sublink" href="#download">选择其它版本或镜像</a>
+                  </div>
+                </div>
                 <a
                   class="btn btn-secondary btn-lg"
                   href="https://github.com/yArna/OpenUPX-Installer"
@@ -367,35 +375,55 @@
           <div class="container">
             <div class="download-panel">
               <div>
-                <h2>下载</h2>
-                <p>支持 macOS 与 Windows。安装 CEP、UXP、XDX，一个应用即可。</p>
-                <div class="download-actions">
-                  <a
-                    class="btn btn-primary btn-lg"
-                    href="https://github.com/yArna/OpenUPX-Installer/releases/latest"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      aria-hidden="true"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" x2="12" y1="15" y2="3" />
-                    </svg>
-                    GitHub Releases
-                  </a>
-                  <a
-                    class="btn btn-secondary btn-lg"
-                    href="https://github.com/yArna/OpenUPX-Installer#readme"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    文档
+                <div class="download-panel-head">
+                  <div>
+                    <h2>下载安装包</h2>
+                    <p>支持 macOS 与 Windows。提供 GitHub 官方与蓝奏云国内高速多渠道镜像。</p>
+                  </div>
+                  <div class="download-version-tag">
+                    <span>⚡ 双镜像支持 · 极速分发</span>
+                  </div>
+                </div>
+
+                <div id="download-platforms" class="download-platforms">
+                  <!-- 动态由 download.js 填充，默认展示优雅降级内容 -->
+                  <div class="platform-card">
+                    <div class="platform-card-header">
+                      <div class="platform-title-row">
+                        <span class="platform-icon">🍎</span>
+                        <div>
+                          <h3>macOS 版</h3>
+                          <p class="platform-subtitle">Apple 芯片与 Intel 芯片通用 (Universal DMG)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="platform-actions">
+                      <a class="btn btn-primary" href="https://github.com/yArna/OpenUPX-Installer/releases/latest" target="_blank" rel="noopener noreferrer">
+                        GitHub 下载
+                      </a>
+                    </div>
+                  </div>
+                  <div class="platform-card">
+                    <div class="platform-card-header">
+                      <div class="platform-title-row">
+                        <span class="platform-icon">🪟</span>
+                        <div>
+                          <h3>Windows 版</h3>
+                          <p class="platform-subtitle">Windows 10 / 11 (64位安装包)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="platform-actions">
+                      <a class="btn btn-primary" href="https://github.com/yArna/OpenUPX-Installer/releases/latest" target="_blank" rel="noopener noreferrer">
+                        GitHub 下载
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="download-footer-links">
+                  <a class="btn btn-ghost" href="https://github.com/yArna/OpenUPX-Installer/releases" target="_blank" rel="noopener noreferrer">
+                    查看历史版本与更新记录 →
                   </a>
                 </div>
               </div>
@@ -437,5 +465,6 @@
         </div>
       </footer>
     </div>
+    <script src="download.js"></script>
   </body>
 </html>

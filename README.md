@@ -66,23 +66,17 @@ APPLE_TEAM_ID="TEAMID"
 npm run release:macos
 ```
 
-发布到 GitHub Release 前，使用 `gh auth login` 登录，并确保当前工作区干净、提交已经推送。下面的命令直接校验并上传已经构建好的 DMG，不会再次编译；默认标签来自 `package.json` 的应用版本：
+使用 QRls 将已构建好的安装包上传至 GitHub Release 与 蓝奏云：
 
 ```bash
-npm run release:macos:github
+npm run release:upload
 ```
 
-如需一次完成构建、签名、公证和上传：
+如需空跑测试或指定参数：
 
 ```bash
-npm run release:macos:github:build
-```
-
-指定标签或先创建草稿：
-
-```bash
-npm run release:macos:github -- --tag v0.2.0
-npm run release:macos:github -- --tag v0.2.0 --draft
+npm run release:upload -- --dry
+npm run release:upload -- --draft
 ```
 
 脚本兼容 `MACOS_SIGNING_IDENTITY`、`APPLE_APP_SPECIFIC_PASSWORD` 变量别名，也支持用 `APPLE_API_ISSUER`、`APPLE_API_KEY`、`APPLE_API_KEY_PATH` 代替 Apple ID 公证凭据。
@@ -105,7 +99,7 @@ cargo install --locked cargo-xwin
 npm run release:windows
 ```
 
-产物位于 `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`，包括 `-setup.exe` 和对应的 `.sig`。完成 macOS、Windows 构建后运行 `npm run release:github`，发布脚本会自动把两个平台的产物合并到同一个 GitHub Release 和 `latest.json`。
+产物位于 `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`，包括 `-setup.exe` 和对应的 `.sig`。完成 macOS、Windows 构建后运行 `npm run release:upload`，发布脚本会自动把两个平台的产物合并发布到 GitHub Release 与 蓝奏云。
 
 完整的一键发布命令：
 

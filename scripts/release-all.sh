@@ -24,4 +24,4 @@ else
 fi
 
 npm run release:macos
-npm run release:github
+npm run release:upload

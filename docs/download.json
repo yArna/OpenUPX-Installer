@@ -1,0 +1,40 @@
+{
+  "name": "OpenUXP Installer",
+  "version": "1.0.3",
+  "buildVersion": "1.0.3",
+  "publishedAt": "2026-09-08T03:57:10.662Z",
+  "variants": {
+    "macos-universal": {
+      "name": "OpenUXP Installer_1.0.3_universal.dmg",
+      "size": 11565095,
+      "sha256": "a5bb3446ff431435ce329fd8b4b1abc1567b4673c023b16ec5e14baa5b204763",
+      "primaryUrl": "https://github.com/yArna/OpenUPX-Installer/releases/download/v1.0.3/OpenUXP Installer_1.0.3_universal.dmg",
+      "mirrors": [
+        {
+          "target": "github",
+          "url": "https://github.com/yArna/OpenUPX-Installer/releases/download/v1.0.3/OpenUXP Installer_1.0.3_universal.dmg"
+        },
+        {
+          "target": "lanzou",
+          "url": "https://ww.lanzou.com/mock_OpenUXP Installer_1.0.3_universal.dmg"
+        }
+      ]
+    },
+    "windows-x64": {
+      "name": "OpenUXP Installer_1.0.3_x64-setup.exe",
+      "size": 3655309,
+      "sha256": "0c0be67102f8fd540092b88e6aeab156d030a21b3f1147d9f3116738173e7b56",
+      "primaryUrl": "https://github.com/yArna/OpenUPX-Installer/releases/download/v1.0.3/OpenUXP Installer_1.0.3_x64-setup.exe",
+      "mirrors": [
+        {
+          "target": "github",
+          "url": "https://github.com/yArna/OpenUPX-Installer/releases/download/v1.0.3/OpenUXP Installer_1.0.3_x64-setup.exe"
+        },
+        {
+          "target": "lanzou",
+          "url": "https://ww.lanzou.com/mock_OpenUXP Installer_1.0.3_x64-setup.exe"
+        }
+      ]
+    }
+  }
+}
